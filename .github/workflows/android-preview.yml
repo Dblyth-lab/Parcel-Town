@@ -56,6 +56,20 @@ jobs:
       - name: Apply verified v0.6.1 upgrade
         run: |
           base64 --decode patches/v0.6.1.patch.gz.b64 | gzip --decompress > /tmp/parcel-v061.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('/tmp/parcel-v061.patch')
+          s=p.read_text()
+          start=s.index('--- a/sw.js\\n'.replace('\\n','\n'))
+          end=s.index('--- /dev/null',start)
+          p.write_text(s[:start]+s[end:])
+          sw=Path('sw.js')
+          text=sw.read_text()
+          text,n=re.subn(r"const CACHE='[^']+'", "const CACHE='parcel-town-playtest-v0.6.1'",text,count=1)
+          assert n==1
+          sw.write_text(text)
+          PY
           patch --dry-run --batch -p1 < /tmp/parcel-v061.patch
           patch --batch -p1 < /tmp/parcel-v061.patch
           grep -q '"version": "0.6.1"' package.json
