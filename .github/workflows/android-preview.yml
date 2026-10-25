@@ -111,7 +111,7 @@ jobs:
           ./gradlew --no-daemon assembleRelease
       - name: Verify APK
         env:
-          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_CODE: ${{ inputs.version_code || '20' }}
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
