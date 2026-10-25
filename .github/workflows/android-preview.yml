@@ -48,8 +48,11 @@ jobs:
           unzip -t /tmp/parcel-source.zip
           mkdir -p /tmp/parcel-project
           unzip -q /tmp/parcel-source.zip -d /tmp/parcel-project
-          test -f /tmp/parcel-project/package.json
-          cp -a /tmp/parcel-project/. .
+          SOURCE_ROOT="$(find /tmp/parcel-project -maxdepth 3 -type f -name package.json -printf '%h\n' | head -1)"
+          test -n "$SOURCE_ROOT"
+          test -f "$SOURCE_ROOT/capacitor.config.json"
+          echo "Using source: $SOURCE_ROOT"
+          cp -a "$SOURCE_ROOT"/. .
       - name: Prepare Capacitor Android project
         run: |
           npm install --no-audit --no-fund
