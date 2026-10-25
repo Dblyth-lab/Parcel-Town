@@ -33,8 +33,12 @@ jobs:
           java-version: "17"
       - name: Install Android SDK
         run: |
-          sdkmanager --version
-          sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          SDKMANAGER=/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
+          "$SDKMANAGER" --version
+          "$SDKMANAGER" --install 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
       - name: Download project source from Drive
         env:
           FILE_ID: ${{ inputs.source_file_id || '17s4zcIj0t0Si54phRUAqS-oz_mxYUgSj' }}
