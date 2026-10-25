@@ -44,7 +44,7 @@ jobs:
           FILE_ID: ${{ inputs.source_file_id || '17s4zcIj0t0Si54phRUAqS-oz_mxYUgSj' }}
         run: |
           python3 -m pip install --quiet gdown
-          gdown --id "$FILE_ID" -O /tmp/parcel-source.zip
+          gdown "$FILE_ID" -O /tmp/parcel-source.zip
           unzip -t /tmp/parcel-source.zip
           mkdir -p /tmp/parcel-project
           unzip -q /tmp/parcel-source.zip -d /tmp/parcel-project
