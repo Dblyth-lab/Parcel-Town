@@ -1,5 +1,7 @@
 name: Parcel Town Preview APK
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       source_file_id:
@@ -29,12 +31,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
       - name: Install Android SDK
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+        run: |
+          sdkmanager --version
+          sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
       - name: Download project source from Drive
         env:
-          FILE_ID: ${{ inputs.source_file_id }}
+          FILE_ID: ${{ inputs.source_file_id || '17s4zcIj0t0Si54phRUAqS-oz_mxYUgSj' }}
         run: |
           python3 -m pip install --quiet gdown
           gdown --id "$FILE_ID" -O /tmp/parcel-source.zip
@@ -60,8 +63,8 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.PARCEL_KEYSTORE_B64 }}
           KEYSTORE_PASSWORD: ${{ secrets.PARCEL_KEYSTORE_PASSWORD }}
-          VERSION_NAME: ${{ inputs.version_name }}
-          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name || '0.5.8' }}
+          VERSION_CODE: ${{ inputs.version_code || '20' }}
         run: |
           test -n "$KEYSTORE_B64" && test -n "$KEYSTORE_PASSWORD"
           python3 - <<'PYCODE'
