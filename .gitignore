@@ -1,0 +1,9 @@
+*.p12
+*.jks
+*.keystore
+*Keystore*Password*
+*.env
+node_modules/
+android/.gradle/
+android/build/
+android/app/build/
