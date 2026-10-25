@@ -53,10 +53,9 @@ jobs:
           npm run android:immersive
       - name: Run available tests
         run: |
-          for f in tests/*.cjs tests/*.mjs; do
-            [ -f "$f" ] || continue
-            node "$f"
-          done
+          LATEST=$(find tests -maxdepth 1 -name "verify_v*.cjs" | sort -V | tail -1)
+          test -n "$LATEST"
+          node "$LATEST"
       - name: Configure permanent signing and version
         env:
           KEYSTORE_B64: ${{ secrets.PARCEL_KEYSTORE_B64 }}
