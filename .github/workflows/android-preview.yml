@@ -134,6 +134,16 @@ jobs:
           node tests/verify_v124.cjs
           node tests/verify_delivery_bonus.cjs
           git diff --check
+      - name: Apply verified v1.3.4 scenic landscape and rewards
+        run: |
+          base64 --decode patches/v124-v134-scenic-rewards-batch.patch.gz.b64 | gzip -d > /tmp/v124-v134.patch
+          git apply --check /tmp/v124-v134.patch
+          git apply /tmp/v124-v134.patch
+          test "$(node -p 'require("./package.json").version')" = "1.3.4"
+          node tests/verify_v134.cjs
+          node tests/verify_delivery_bonus.cjs
+          node tests/verify_reward_delivery.cjs
+          git diff --check
       - name: Prepare Capacitor Android project
         run: |
           npm install --no-audit --no-fund
