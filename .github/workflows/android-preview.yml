@@ -24,7 +24,7 @@ jobs:
           python3 -m pip install --quiet gdown
           gdown '1k1cyhc2WE2AK14sEqethQn0NJFv9h1jC' -O /tmp/parcel-v145.zip
           unzip -tqq /tmp/parcel-v145.zip
-          unzip -q /tmp/parcel-v145.zip -d .
+          unzip -oq /tmp/parcel-v145.zip -d .
           test "$(node -p 'require("./package.json").version')" = '1.4.5'
           test "$(node -p 'require("./capacitor.config.json").appId')" = 'com.blythlabs.parceltown.preview'
       - name: Test source and prepare Android
