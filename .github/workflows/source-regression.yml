@@ -133,6 +133,16 @@ jobs:
           node tests/verify_delivery_bonus.cjs
           node tests/verify_reward_delivery.cjs
           git diff --check
+      - name: Verify v1.4.2 Harbour shelf art and coin prices
+        run: |
+          base64 --decode patches/v141-v142-landmark-shelf-scene-preview.patch.gz.b64 | gzip -d > /tmp/v141-v142.patch
+          git apply --check /tmp/v141-v142.patch
+          git apply /tmp/v141-v142.patch
+          test "$(node -p 'require("./package.json").version')" = "1.4.2"
+          node tests/verify_v142.cjs
+          node tests/verify_delivery_bonus.cjs
+          node tests/verify_reward_delivery.cjs
+          git diff --check
       - name: Validate offline assets and JavaScript
         run: |
           node - <<'NODE'
@@ -150,9 +160,9 @@ jobs:
       - name: Package editable source only (no APK)
         run: |
           mkdir -p /tmp/parcel-source-batch
-          tar -czf /tmp/parcel-source-batch/ParcelTown-v1.4.1-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md CHANGELOG_v0.8.*.md CHANGELOG_v0.9.*.md CHANGELOG_v1.0.*.md CHANGELOG_v1.1.*.md CHANGELOG_v1.2.*.md CHANGELOG_v1.3.*.md CHANGELOG_v1.4.*.md DEVELOPMENT_BATCH_v135_to_v141.md DEVELOPMENT_BATCH_v125_to_v134.md DEVELOPMENT_BATCH_v102_to_v113.md DEVELOPMENT_BATCH_v115_to_v124.md
+          tar -czf /tmp/parcel-source-batch/ParcelTown-v1.4.2-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md CHANGELOG_v0.8.*.md CHANGELOG_v0.9.*.md CHANGELOG_v1.0.*.md CHANGELOG_v1.1.*.md CHANGELOG_v1.2.*.md CHANGELOG_v1.3.*.md CHANGELOG_v1.4.*.md DEVELOPMENT_BATCH_v135_to_v141.md DEVELOPMENT_BATCH_v125_to_v134.md DEVELOPMENT_BATCH_v102_to_v113.md DEVELOPMENT_BATCH_v115_to_v124.md
       - uses: actions/upload-artifact@v4
         with:
-          name: ParcelTown-v1.4.1-Source-Only
-          path: /tmp/parcel-source-batch/ParcelTown-v1.4.1-source.tar.gz
+          name: ParcelTown-v1.4.2-Source-Only
+          path: /tmp/parcel-source-batch/ParcelTown-v1.4.2-source.tar.gz
           retention-days: 30
