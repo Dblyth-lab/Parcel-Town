@@ -1,29 +1,37 @@
-# Parcel Town — Graphics & Gameplay Development Batch
+# Parcel Town — Ten Source Milestones v0.6.3 to v0.7.2
 
-**Baseline on device:** v0.6.2, versionCode 22, signed with the established Parcel Town Preview certificate.
+**Source status:** Integrated, committed as reproducible patch, regression-tested in GitHub Actions on 26 October 2026.
 
-**Build policy:** Complete approximately ten source-only milestones, with regression checks at each milestone. The APK workflow is manual-only (`workflow_dispatch`). Do not change the Android package ID, the permanent signing certificate, or the save-data key/schema. The next device APK should be built after the batch is reviewed and passes tests.
+**Mobile release status:** No APK built for this batch. The last device-tested version remains v0.6.2 (versionCode 22). The Android signing key remains unchanged and protected in GitHub Actions secrets. APK workflow is manual-only.
 
-| Source milestone | Intended change | Acceptance check |
-|---|---|---|
-| v0.6.3 | Tap town landmarks; show building name, owned/locked status, cost and contextual action | Selecting an affordable landmark leads to existing purchase confirmation; owned ones open Explorer |
-| v0.6.4 | Place and scale landmark interaction zones against scenic district artwork | Markers are accessible on narrow phones and do not obstruct controls |
-| v0.6.5 | Map evolution: distinguish unbuilt lot, active landmark and completed district | Build result visibly updates Town, Map and Explorer |
-| v0.6.6 | Clover Valley cinematic-quality artwork integration | Offline scene loads, labels remain legible |
-| v0.6.7 | Sunset Canyon cinematic-quality artwork integration | Same |
-| v0.6.8 | Alpine Ridge cinematic-quality artwork integration | Same |
-| v0.6.9 | Blossom Bay cinematic-quality artwork integration | Same |
-| v0.7.0 | Parcel sorting screen polish, route clarity, interaction and success feedback | Existing solver and progression tests pass |
-| v0.7.1 | Level-complete presentation, achievements and collection feedback | Rewards awarded once, save compatibility |
-| v0.7.2 | End-to-end mobile QA, accessibility and graphics benchmark | Full regression; build signed APK with next monotonically increasing versionCode |
+## Delivered source changes
 
-Approved design: vibrant cinematic 3D-looking isometric town, six scenic districts, no unearned logos or UI text in art, gentle free-to-play puzzle progression, no energy limits, no forced waiting.
+| Version | Actual implementation |
+|---|---|
+| v0.6.3 | Tap landmark icons on the town scenery to open details; use existing coin purchase confirmation or inspect built landmarks |
+| v0.6.4 | Toggle landmark name labels on the scenic map without hiding tappable icons; improved focus and touch targets |
+| v0.6.5 | Optional Level 1–3 landmark upgrades, saved in optional `buildingLevels` under existing schema-1 saves; earned-coin prices and confirmation |
+| v0.6.6 | Clover Valley original scenic atmosphere overlay added to Town, Atlas and Explorer; offline cached |
+| v0.6.7 | Sunset Canyon scenic atmosphere overlay and offline caching |
+| v0.6.8 | Alpine Ridge scenic atmosphere overlay and offline caching |
+| v0.6.9 | Blossom Bay scenic atmosphere overlay and offline caching |
+| v0.7.0 | Free route-check control and readable route feedback; no hints or coins spent |
+| v0.7.1 | Level-complete celebration and clearer reward/chapter wording |
+| v0.7.2 | Screen-size and reduced-motion accessibility adjustments, lazy loading for atlas backgrounds, combined regression test |
 
-Do not claim artwork is finished merely because old SVGs or placeholders are used. Each release should state actual implementation status.
+**Art-quality qualification:** v0.6.6–v0.6.9 add original decorative vector atmosphere overlays to the existing illustrated backgrounds. They are **not** replacements for the four full cinematic-quality district artworks in the approved visual benchmark. Those full artwork replacements remain a separate visual-production milestone. Do not describe the current graphics as approved final cinematic quality.
 
-### Development discipline
-- Keep every milestone as a separate named source patch and test.
-- No signing keys or passwords in GitHub, ZIPs, or project files.
-- Archive editable source and verified APKs in owner-controlled secure storage.
-- APK builds are intentionally manual; test only after approximately ten source milestones.
-- Maintain exact Android package `com.blythlabs.parceltown.preview` and saved data key `parcel_town_save_v1`.
+## Recovery and verification
+
+- Durable combined patch: `patches/v063-v072-development-batch.patch.gz.b64`
+- Source verification: `.github/workflows/source-regression.yml`
+- GitHub Actions regenerates the source from the approved Drive baseline, v0.6.1 patch, v0.6.2 fix and this ten-version batch patch, then executes `tests/verify_v072.cjs`.
+- The source-only verification succeeded: https://github.com/Dblyth-lab/Parcel-Town/actions/runs/40256751057
+- That run packages an **editable source-only** artifact. It creates no Android APK and does not access the signing secrets.
+
+## Safety and next release gates
+
+- Keep Android ID `com.blythlabs.parceltown.preview`, save key `parcel_town_save_v1` and save schema 1.
+- The next Android APK must increase versionCode beyond 22 and keep the existing signing certificate.
+- Before generating that APK: conduct visual QA on real small-screen devices, validate upgrade/restore edge cases and complete approved cinematic artwork.
+- No energy limits, waiting timers, compulsory purchases or monetisation shortcuts added.
