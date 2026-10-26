@@ -1,0 +1,81 @@
+name: Parcel Town Source Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - "patches/**"
+      - "scripts/**"
+      - "tests/**"
+      - ".github/workflows/source-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retrieve approved baseline from project Drive
+        run: |
+          python3 -m pip install --quiet gdown
+          gdown "17s4zcIj0t0Si54phRUAqS-oz_mxYUgSj" -O /tmp/parcel-source.zip
+          unzip -tqq /tmp/parcel-source.zip
+          mkdir -p /tmp/parcel-baseline
+          unzip -q /tmp/parcel-source.zip -d /tmp/parcel-baseline
+          ROOT="$(find /tmp/parcel-baseline -maxdepth 3 -name package.json -printf '%h\n' | head -1)"
+          test -n "$ROOT" && test -f "$ROOT/capacitor.config.json"
+          cp -a "$ROOT"/. .
+      - name: Recover v0.6.1 and v0.6.2 verified release source
+        run: |
+          base64 --decode patches/v0.6.1.patch.gz.b64 | gzip -d > /tmp/v061.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('/tmp/v061.patch')
+          s=p.read_text()
+          start=s.index('--- a/sw.js\n')
+          end=s.index('--- /dev/null',start)
+          p.write_text(s[:start]+s[end:])
+          sw=Path('sw.js')
+          text,n=re.subn(r"const CACHE='[^']+'","const CACHE='parcel-town-playtest-v0.6.1'",sw.read_text(),count=1)
+          assert n==1
+          sw.write_text(text)
+          PY
+          patch --dry-run --batch -p1 < /tmp/v061.patch
+          patch --batch -p1 < /tmp/v061.patch
+          node scripts/upgrade-v062.mjs
+          node tests/verify_v062.cjs
+      - name: Apply all ten source-only milestones
+        run: |
+          base64 --decode patches/v063-v072-development-batch.patch.gz.b64 | gzip -d > /tmp/v063-v072.patch
+          git apply --check /tmp/v063-v072.patch
+          git apply /tmp/v063-v072.patch
+          test "$(node -p 'require("./package.json").version')" = "0.7.2"
+          node tests/verify_v072.cjs
+          git diff --check
+      - name: Validate offline assets and JavaScript
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'), vm=require('node:vm');
+          const text=fs.readFileSync('index.html','utf8');
+          const code=text.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+          if(!code)throw Error('Game script not present');
+          new vm.Script(code);
+          for(const region of ['clover','sunset','alpine','blossom']){
+            if(!fs.existsSync('assets/scenic-overlays/'+region+'.svg'))throw Error('Missing scenic overlay '+region);
+          }
+          console.log('PASS source syntax and offline scene files');
+          NODE
+      - name: Package editable source only (no APK)
+        run: |
+          mkdir -p /tmp/parcel-source-batch
+          tar -czf /tmp/parcel-source-batch/ParcelTown-v0.7.2-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ParcelTown-v0.7.2-Source-Only
+          path: /tmp/parcel-source-batch/ParcelTown-v0.7.2-source.tar.gz
+          retention-days: 30
