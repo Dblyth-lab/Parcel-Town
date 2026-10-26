@@ -1,0 +1,50 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),vm=require('node:vm'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+const pkg=require(path.join(root,'package.json'));
+const config=require(path.join(root,'capacitor.config.json'));
+assert.equal(pkg.version,'0.6.2');
+assert.equal(config.appId,'com.blythlabs.parceltown.preview');
+assert.match(html,/const KEY = 'parcel_town_save_v1'/);
+assert.match(sw,/parcel-town-playtest-v0\.6\.2/);
+assert.match(html,/function premiumDistrictScene\(id\)/);
+for(const d of ['harbour','metro']){
+  assert(fs.statSync(path.join(root,`assets/scenes/${d}-cinematic.webp`)).size>100000);
+  assert(sw.includes(`assets/scenes/${d}-cinematic.webp`));
+}
+assert(html.includes('src="${premiumDistrictScene(map.id)}"'),'Town uses cinematic resolver');
+assert(html.includes('src="${premiumDistrictScene(d.id)}"'),'Atlas and Explorer use cinematic resolver');
+assert(html.includes('aria-label="Open the six-district world map"'));
+const source=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+assert(source,'inline game script found');new vm.Script(source);
+const elements=new Map();
+function element(){return {innerHTML:'',textContent:'',clientWidth:350,clientHeight:400,style:{setProperty(){}},dataset:{},classList:{add(){},remove(){},toggle(){}},addEventListener(name,fn){this.listeners??={};this.listeners[name]=fn;},setAttribute(){},focus(){},disabled:false};}
+const nav=['town','album','shop','account'].map(x=>({...element(),dataset:{page:x}}));
+const document={body:element(),querySelector(q){if(!elements.has(q))elements.set(q,element());return elements.get(q);},querySelectorAll(){return nav;},addEventListener(){},createElement(){return element()}};
+const win={scrollTo(){},addEventListener(){}};
+const stored={parcel_town_save_v1:JSON.stringify({schema:1,level:1,coins:40,hints:3,delivered:0,built:['depot'],achievements:[],lastPlayed:null})};
+const localStorage={getItem(k){return stored[k]??null},setItem(k,v){stored[k]=String(v)}};
+const sandbox={window:win,document,navigator:{},location:{protocol:'file:',hostname:''},localStorage,console,structuredClone,Date,Math,Intl,Number,String,Array,JSON,Set,Map,Error,setTimeout,clearTimeout,getComputedStyle(){return {paddingTop:'4',paddingBottom:'4',paddingLeft:'2',paddingRight:'2'}}};
+vm.runInNewContext(source,sandbox,{timeout:5000});
+const api=win.__PARCEL_TOWN_TEST__;
+assert(api,'test API ready');
+assert.equal(api.getPage(),'town');
+assert(elements.get('#main').innerHTML.includes('assets/scenes/harbour-cinematic.webp'));
+const click=elements.get('#main').listeners.click;
+assert.equal(typeof click,'function','actual delegated tap handler registered');
+function tap(action){click({target:{closest(selector){return selector==='[data-action]'?{dataset:{action}}:null;}}});}
+tap('maps');
+assert.equal(api.getPage(),'maps');
+let markup=elements.get('#main').innerHTML;
+assert(markup.includes('Your world map'));
+assert.equal((markup.match(/class="world-card /g)||[]).length,6);
+assert(markup.includes('assets/scenes/harbour-cinematic.webp'));
+assert(markup.includes('assets/scenes/metro-cinematic.webp'));
+api.handleBack();assert.equal(api.getPage(),'town');
+tap('tour');assert.equal(api.getPage(),'tour');
+assert(elements.get('#main').innerHTML.includes('assets/scenes/harbour-cinematic.webp'));
+api.handleBack();assert.equal(api.getPage(),'town');
+assert.equal(JSON.parse(stored.parcel_town_save_v1).level,1);
+assert.equal(JSON.parse(stored.parcel_town_save_v1).coins,40);
+console.log('PASS v0.6.2: Maps tap displays all six districts; Harbour/Metro cinematic Town, Atlas and Explorer; saves/signature identity preserved');
