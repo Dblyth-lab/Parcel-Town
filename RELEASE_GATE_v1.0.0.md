@@ -25,10 +25,10 @@
 - v1.0.0 Source candidate checkpoint without compiling an APK.
 
 **Proof / recovery**
-- Source-only CI success: https://github.com/Dblyth-lab/Parcel-Town/actions/runs/40260535821
+- Latest refined source-only CI success: https://github.com/Dblyth-lab/Parcel-Town/actions/runs/40261003372
 - Commit patch: `patches/v081-v100-landmark-upgrades.patch.gz.b64`
 - Full editable source artifact: `ParcelTown-v1.0.0-Source-Only` on CI run above.
-- 111 SVG variants in `assets/landmark-levels/`, generated from 37 unique source building SVGs.
+- 111 SVG variants in `assets/landmark-levels/`, based on 37 unique source building SVGs. After visual QA, Level 2/3 upgrades were made landmark-specific: ferries gain sails, bridges gain railings and lights, orchards gain landscaping, windmills gain blades, solar landmarks gain panels, and shops gain extensions. District assets scale according to their original 128x112 viewBox rather than the Harbour 200x175 viewBox. All 111 SVGs passed XML parsing.
 - Tests: `node tests/verify_v100.cjs` and `node tests/verify_delivery_bonus.cjs` passed in local code environment and GitHub CI. Source CI also ran the earlier v0.6.2 through v0.8.0 regression stages before applying v1.0.0.
 - JavaScript syntax check passed on each of 20 local stages.
 - XML parse check passed on all 111 SVG variants.
