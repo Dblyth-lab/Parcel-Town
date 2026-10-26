@@ -27,6 +27,33 @@ jobs:
           unzip -oq /tmp/parcel-v145.zip -d .
           test "$(node -p 'require("./package.json").version')" = '1.4.5'
           test "$(node -p 'require("./capacitor.config.json").appId')" = 'com.blythlabs.parceltown.preview'
+      - name: Apply v1.4.6-1.4.7 explorer usability improvements
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="if(action==='reset'){tourView.zoom=1;tourView.x=0;tourView.y=0;}else tourView.zoom=Math.max(1,Math.min(2.1,tourView.zoom+(action==='in'?.25:-.25)));"
+          new="if(action==='reset'){tourView.zoom=1;tourView.x=0;tourView.y=0;}else tourView.zoom=Math.max(1,Math.min(2.1,tourView.zoom+(action==='in'?.2:-.2)));"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="if(inButton)inButton.disabled=z>=2.09;if(outButton)outButton.disabled=z<=1.01;"
+          new="if(inButton)inButton.disabled=z>=2.09;if(outButton)outButton.disabled=z<=1.01;stage.setAttribute('aria-label','Interactive district view, '+Math.round(z*100)+' percent zoom');"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="const tourBuilding=e.target.closest('[data-landmark]');if(tourBuilding){tourSelectLandmark(tourBuilding.dataset.landmark);return;}"
+          new="const tourBuilding=e.target.closest('[data-landmark]');if(tourBuilding){const id=tourBuilding.dataset.landmark;if(tourView.selected===id)focusTourLandmark(id,Math.max(1.35,tourView.zoom));else tourSelectLandmark(id);return;}"
+          assert old in s
+          s=s.replace(old,new,1)
+          old="const tourFocus=e.target.closest('[data-tour-focus]');if(tourFocus){focusTourLandmark(tourView.selected||selectedDistrict().buildings[0].id);return;}"
+          new="const tourFocus=e.target.closest('[data-tour-focus]');if(tourFocus){focusTourLandmark(tourView.selected||selectedDistrict().buildings[0].id,1.35);return;}"
+          assert old in s
+          s=s.replace(old,new,1)
+          s=s.replace("v1.4.5 · CALM PLAY","v1.4.7 · CALM PLAY")
+          p.write_text(s)
+          p=Path('package.json');s=p.read_text();assert '"version": "1.4.5"' in s;p.write_text(s.replace('"version": "1.4.5"','"version": "1.4.7"',1))
+          Path('CHANGELOG_v1.4.7.md').write_text('# v1.4.6–v1.4.7\n\nExplorer: gentler zoom increments, clear zoom accessibility label, tapping an already-selected landmark focuses it, and focus uses less aggressive magnification. Save schema, application ID, purchases and progress unchanged.\n')
+          PY
       - name: Test source and prepare Android
         run: |
           npm install --no-audit --no-fund
@@ -48,8 +75,8 @@ jobs:
           import os,base64,pathlib,re
           p=pathlib.Path('android/app/build.gradle')
           s=p.read_text()
-          s,n=re.subn(r'versionCode\s+\d+','versionCode 31',s,count=1);assert n==1
-          s,n=re.subn(r'versionName\s+"[^"]+"','versionName "1.4.5"',s,count=1);assert n==1
+          s,n=re.subn(r'versionCode\s+\d+','versionCode 32',s,count=1);assert n==1
+          s,n=re.subn(r'versionName\s+"[^"]+"','versionName "1.4.7"',s,count=1);assert n==1
           p.write_text(s)
           pathlib.Path('android/app/parcel-release.p12').write_bytes(base64.b64decode(os.environ['KEYSTORE_B64'],validate=True))
           PY
@@ -81,16 +108,16 @@ jobs:
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           "$AAPT" dump badging "$APK" | grep "name='com.blythlabs.parceltown.preview'"
-          "$AAPT" dump badging "$APK" | grep "versionCode='31'"
+          "$AAPT" dump badging "$APK" | grep "versionCode='32'"
           "$SIGNER" verify --verbose --print-certs "$APK" | tee signing-verification.txt
           grep -iq '7bd60d0b87866b385c2f595c134eba5993825da73f251a09d5840c13e31fec4f' signing-verification.txt
-          cp "$APK" ParcelTown-v1.4.5-Preview.apk
-          sha256sum ParcelTown-v1.4.5-Preview.apk > SHA256SUMS.txt
+          cp "$APK" ParcelTown-v1.4.7-Preview.apk
+          sha256sum ParcelTown-v1.4.7-Preview.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: ParcelTown-v1.4.5-Signed-APK
+          name: ParcelTown-v1.4.7-Signed-APK
           path: |
-            ParcelTown-v1.4.5-Preview.apk
+            ParcelTown-v1.4.7-Preview.apk
             SHA256SUMS.txt
             signing-verification.txt
           retention-days: 30
