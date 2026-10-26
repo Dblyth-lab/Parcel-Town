@@ -9,11 +9,11 @@ on:
       version_name:
         description: Android version name matching the selected source
         required: true
-        default: "0.6.2"
+        default: "0.8.0"
       version_code:
         description: Increasing Android versionCode
         required: true
-        default: "22"
+        default: "23"
 permissions:
   contents: read
 jobs:
@@ -76,6 +76,19 @@ jobs:
         run: |
           node scripts/upgrade-v062.mjs
           node tests/verify_v062.cjs
+      - name: Restore full v0.8.0 game source and verify release tests
+        run: |
+          base64 --decode patches/v063-v072-development-batch.patch.gz.b64 | gzip -d > /tmp/v063-v072.patch
+          git apply --check /tmp/v063-v072.patch
+          git apply /tmp/v063-v072.patch
+          node tests/verify_v072.cjs
+          base64 --decode patches/v073-v080-apk-gate.patch.gz.b64 | gzip -d > /tmp/v073-v080.patch
+          git apply --check /tmp/v073-v080.patch
+          git apply /tmp/v073-v080.patch
+          test "$(node -p 'require("./package.json").version')" = "0.8.0"
+          node tests/verify_v080.cjs
+          node tests/verify_delivery_bonus.cjs
+          git diff --check
       - name: Prepare Capacitor Android project
         run: |
           npm install --no-audit --no-fund
@@ -93,8 +106,8 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.PARCEL_KEYSTORE_B64 }}
           KEYSTORE_PASSWORD: ${{ secrets.PARCEL_KEYSTORE_PASSWORD }}
-          VERSION_NAME: ${{ inputs.version_name || '0.6.2' }}
-          VERSION_CODE: ${{ inputs.version_code || '22' }}
+          VERSION_NAME: ${{ inputs.version_name || '0.8.0' }}
+          VERSION_CODE: ${{ inputs.version_code || '23' }}
         run: |
           test -n "$KEYSTORE_B64" && test -n "$KEYSTORE_PASSWORD"
           python3 - <<'PYCODE'
@@ -134,7 +147,7 @@ jobs:
           ./gradlew --no-daemon assembleRelease
       - name: Verify APK
         env:
-          VERSION_CODE: ${{ inputs.version_code || '22' }}
+          VERSION_CODE: ${{ inputs.version_code || '23' }}
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
