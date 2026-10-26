@@ -52,7 +52,7 @@ jobs:
           s=s.replace("v1.4.5 · CALM PLAY","v1.4.7 · CALM PLAY")
           p.write_text(s)
           p=Path('package.json');s=p.read_text();assert '"version": "1.4.5"' in s;p.write_text(s.replace('"version": "1.4.5"','"version": "1.4.7"',1))
-          Path('CHANGELOG_v1.4.7.md').write_text('# v1.4.6–v1.4.7\n\nExplorer: gentler zoom increments, clear zoom accessibility label, tapping an already-selected landmark focuses it, and focus uses less aggressive magnification. Save schema, application ID, purchases and progress unchanged.\n')
+          Path('CHANGELOG_v1.4.7.md').write_text('v1.4.7 Explorer camera and landmark focus refinements; save schema unchanged.')
           PY
       - name: Test source and prepare Android
         run: |
