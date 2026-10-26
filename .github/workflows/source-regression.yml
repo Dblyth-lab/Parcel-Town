@@ -102,6 +102,15 @@ jobs:
           node tests/verify_v114.cjs
           node tests/verify_delivery_bonus.cjs
           git diff --check
+      - name: Verify ten immersive Explorer and scene versions v1.1.5 to v1.2.4
+        run: |
+          base64 --decode patches/v114-v124-scenic-explorer-batch.patch.gz.b64 | gzip -d > /tmp/v114-v124.patch
+          git apply --check /tmp/v114-v124.patch
+          git apply /tmp/v114-v124.patch
+          test "$(node -p 'require("./package.json").version')" = "1.2.4"
+          node tests/verify_v124.cjs
+          node tests/verify_delivery_bonus.cjs
+          git diff --check
       - name: Validate offline assets and JavaScript
         run: |
           node - <<'NODE'
@@ -119,9 +128,9 @@ jobs:
       - name: Package editable source only (no APK)
         run: |
           mkdir -p /tmp/parcel-source-batch
-          tar -czf /tmp/parcel-source-batch/ParcelTown-v1.1.4-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md CHANGELOG_v0.8.*.md CHANGELOG_v0.9.*.md CHANGELOG_v1.0.*.md CHANGELOG_v1.1.*.md DEVELOPMENT_BATCH_v102_to_v113.md
+          tar -czf /tmp/parcel-source-batch/ParcelTown-v1.2.4-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md CHANGELOG_v0.8.*.md CHANGELOG_v0.9.*.md CHANGELOG_v1.0.*.md CHANGELOG_v1.1.*.md CHANGELOG_v1.2.*.md DEVELOPMENT_BATCH_v102_to_v113.md DEVELOPMENT_BATCH_v115_to_v124.md
       - uses: actions/upload-artifact@v4
         with:
-          name: ParcelTown-v1.1.4-Source-Only
-          path: /tmp/parcel-source-batch/ParcelTown-v1.1.4-source.tar.gz
+          name: ParcelTown-v1.2.4-Source-Only
+          path: /tmp/parcel-source-batch/ParcelTown-v1.2.4-source.tar.gz
           retention-days: 30
