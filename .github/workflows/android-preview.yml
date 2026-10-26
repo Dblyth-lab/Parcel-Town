@@ -1,5 +1,8 @@
 name: Parcel Town Preview APK
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/android-preview.yml']
   workflow_dispatch:
     inputs:
       source_file_id:
@@ -9,11 +12,11 @@ on:
       version_name:
         description: Android version name matching the selected source
         required: true
-        default: "1.1.4"
+        default: "1.2.4"
       version_code:
         description: Increasing Android versionCode
         required: true
-        default: "27"
+        default: "28"
 permissions:
   contents: read
 jobs:
@@ -125,6 +128,15 @@ jobs:
           node tests/verify_v114.cjs
           node tests/verify_delivery_bonus.cjs
           git diff --check
+      - name: Apply tested ten-version Explorer integration v1.2.4
+        run: |
+          base64 --decode patches/v114-v124-scenic-explorer-batch.patch.gz.b64 | gzip -d > /tmp/v114-v124.patch
+          git apply --check /tmp/v114-v124.patch
+          git apply /tmp/v114-v124.patch
+          test "$(node -p 'require("./package.json").version')" = "1.2.4"
+          node tests/verify_v124.cjs
+          node tests/verify_delivery_bonus.cjs
+          git diff --check
       - name: Prepare Capacitor Android project
         run: |
           npm install --no-audit --no-fund
@@ -142,8 +154,8 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.PARCEL_KEYSTORE_B64 }}
           KEYSTORE_PASSWORD: ${{ secrets.PARCEL_KEYSTORE_PASSWORD }}
-          VERSION_NAME: ${{ inputs.version_name || '1.1.4' }}
-          VERSION_CODE: ${{ inputs.version_code || '27' }}
+          VERSION_NAME: ${{ inputs.version_name || '1.2.4' }}
+          VERSION_CODE: ${{ inputs.version_code || '28' }}
         run: |
           test -n "$KEYSTORE_B64" && test -n "$KEYSTORE_PASSWORD"
           python3 - <<'PYCODE'
@@ -183,7 +195,7 @@ jobs:
           ./gradlew --no-daemon assembleRelease
       - name: Verify APK
         env:
-          VERSION_CODE: ${{ inputs.version_code || '27' }}
+          VERSION_CODE: ${{ inputs.version_code || '28' }}
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
