@@ -23,6 +23,7 @@ const newCss=`
 `;
 exactReplace('</style>',newCss+'</style>','style injection');
 exactReplace('<title>Parcel Town Preview — v0.5.8</title>','<title>Parcel Town Preview — v0.6.2</title>','document title');
+exactReplace("const VERSION = '0.5.8';","const VERSION = '0.6.2';",'exported version');
 exactReplace('V0.6.1 · CALM PLAY','V0.6.2 · CALM PLAY','visible version');
 fs.writeFileSync(htmlFile,html);
 const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
