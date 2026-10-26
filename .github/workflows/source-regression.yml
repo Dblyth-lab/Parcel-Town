@@ -66,6 +66,15 @@ jobs:
           node tests/verify_v080.cjs
           node tests/verify_delivery_bonus.cjs
           git diff --check
+      - name: Apply approved v0.8.1 to v1.0.0 landmark and animation milestones
+        run: |
+          base64 --decode patches/v081-v100-landmark-upgrades.patch.gz.b64 | gzip -d > /tmp/v081-v100.patch
+          git apply --check /tmp/v081-v100.patch
+          git apply /tmp/v081-v100.patch
+          test "$(node -p 'require("./package.json").version')" = "1.0.0"
+          node tests/verify_v100.cjs
+          node tests/verify_delivery_bonus.cjs
+          git diff --check
       - name: Validate offline assets and JavaScript
         run: |
           node - <<'NODE'
@@ -83,9 +92,9 @@ jobs:
       - name: Package editable source only (no APK)
         run: |
           mkdir -p /tmp/parcel-source-batch
-          tar -czf /tmp/parcel-source-batch/ParcelTown-v0.8.0-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md CHANGELOG_v0.8.*.md
+          tar -czf /tmp/parcel-source-batch/ParcelTown-v1.0.0-source.tar.gz             --exclude=.git --exclude=node_modules --exclude=.github --exclude='*.p12'             index.html package.json capacitor.config.json sw.js manifest.webmanifest             assets scripts tests CHANGELOG_v0.6.*.md CHANGELOG_v0.7.*.md CHANGELOG_v0.8.*.md CHANGELOG_v0.9.*.md CHANGELOG_v1.0.0.md
       - uses: actions/upload-artifact@v4
         with:
-          name: ParcelTown-v0.8.0-Source-Only
-          path: /tmp/parcel-source-batch/ParcelTown-v0.8.0-source.tar.gz
+          name: ParcelTown-v1.0.0-Source-Only
+          path: /tmp/parcel-source-batch/ParcelTown-v1.0.0-source.tar.gz
           retention-days: 30
