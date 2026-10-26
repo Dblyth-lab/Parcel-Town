@@ -29,7 +29,13 @@ const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
 if(pkg.version!=='0.6.1')throw new Error(`Unexpected source version ${pkg.version}`);
 pkg.version='0.6.2';
 fs.writeFileSync('package.json',JSON.stringify(pkg,null,2)+'\n');
-const sw=fs.readFileSync('sw.js','utf8');
+let sw=fs.readFileSync('sw.js','utf8');
 if(!sw.includes("const CACHE='parcel-town-playtest-v0.6.1'"))throw new Error('Unexpected cache version');
+const added=['harbour','metro'].filter(d=>!sw.includes('assets/scenes/'+d+'-cinematic.webp')).map(d=>'./assets/scenes/'+d+'-cinematic.webp');
+if(added.length){
+  const marker="'./native-back.js',";
+  if(!sw.includes(marker))throw new Error('Service worker asset insertion point missing');
+  sw=sw.replace(marker,marker+added.map(p=>"'"+p+"',").join(''));
+}
 fs.writeFileSync('sw.js',sw.replace("const CACHE='parcel-town-playtest-v0.6.1'","const CACHE='parcel-town-playtest-v0.6.2'"));
 console.log('Upgraded Parcel Town to 0.6.2; Maps navigation and cinematic art resolved.');
