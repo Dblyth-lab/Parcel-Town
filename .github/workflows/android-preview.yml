@@ -1,5 +1,8 @@
 name: Parcel Town Preview APK
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/android-preview.yml']
   workflow_dispatch:
     inputs:
       source_file_id:
