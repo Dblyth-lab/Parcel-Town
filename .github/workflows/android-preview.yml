@@ -11,11 +11,11 @@ on:
       version_name:
         description: Android version name matching the selected source
         required: true
-        default: "0.6.1"
+        default: "0.6.2"
       version_code:
         description: Increasing Android versionCode
         required: true
-        default: "21"
+        default: "22"
 permissions:
   contents: read
 jobs:
@@ -74,6 +74,10 @@ jobs:
           patch --batch -p1 < /tmp/parcel-v061.patch
           grep -q '"version": "0.6.1"' package.json
           grep -q "parcel-town-playtest-v0.6.1" sw.js
+      - name: Verify and repair v0.6.2 Maps and cinematic artwork
+        run: |
+          node scripts/upgrade-v062.mjs
+          node tests/verify_v062.cjs
       - name: Prepare Capacitor Android project
         run: |
           npm install --no-audit --no-fund
@@ -91,8 +95,8 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.PARCEL_KEYSTORE_B64 }}
           KEYSTORE_PASSWORD: ${{ secrets.PARCEL_KEYSTORE_PASSWORD }}
-          VERSION_NAME: ${{ inputs.version_name || '0.6.1' }}
-          VERSION_CODE: ${{ inputs.version_code || '21' }}
+          VERSION_NAME: ${{ inputs.version_name || '0.6.2' }}
+          VERSION_CODE: ${{ inputs.version_code || '22' }}
         run: |
           test -n "$KEYSTORE_B64" && test -n "$KEYSTORE_PASSWORD"
           python3 - <<'PYCODE'
@@ -132,7 +136,7 @@ jobs:
           ./gradlew --no-daemon assembleRelease
       - name: Verify APK
         env:
-          VERSION_CODE: ${{ inputs.version_code || '21' }}
+          VERSION_CODE: ${{ inputs.version_code || '22' }}
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
