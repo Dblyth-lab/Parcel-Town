@@ -7,6 +7,7 @@ const config=require(path.join(root,'capacitor.config.json'));
 assert.equal(pkg.version,'0.6.2');
 assert.equal(config.appId,'com.blythlabs.parceltown.preview');
 assert.match(html,/const KEY = 'parcel_town_save_v1'/);
+assert.match(html,/const VERSION = '0.6.2'/);
 assert.match(sw,/parcel-town-playtest-v0\.6\.2/);
 assert.match(html,/function premiumDistrictScene\(id\)/);
 for(const d of ['harbour','metro']){
